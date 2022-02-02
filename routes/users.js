@@ -1,8 +1,18 @@
+const express = require("express");
+const res = require("express/lib/response");
+const userRoutes = new express.Router();
+const User = require("../models/user")
+
 /** GET / - get list of users.
  *
  * => {users: [{username, first_name, last_name, phone}, ...]}
  *
  **/
+
+ userRoutes.get("/", ensureLoggedIn, async function(req, res, next) {
+    const users = await User.all()
+    return res.json(users)
+ })
 
 
 /** GET /:username - get detail of users.
@@ -10,7 +20,11 @@
  * => {user: {username, first_name, last_name, phone, join_at, last_login_at}}
  *
  **/
-
+ userRoutes.get("/:username", ensureCorrectUser, async function(req, res, next) {
+    const username = req.params.username
+    const user = await User.get(username)
+    return res.json(user)
+ })
 
 /** GET /:username/to - get messages to user
  *
@@ -21,7 +35,11 @@
  *                 from_user: {username, first_name, last_name, phone}}, ...]}
  *
  **/
-
+userRoutes.get("/:username/to", async (req, res) => {
+    const username = req.params.username;
+    const messages = await User.messagesTo(username)
+    return res.json(messages)
+})
 
 /** GET /:username/from - get messages from user
  *
@@ -32,3 +50,10 @@
  *                 to_user: {username, first_name, last_name, phone}}, ...]}
  *
  **/
+ userRoutes.get("/:username/from", async (req, res) => {
+    const username = req.params.username;
+    const messages = await User.messagesFrom(username)
+    return res.json(messages)
+})
+
+module.exports = userRoutes

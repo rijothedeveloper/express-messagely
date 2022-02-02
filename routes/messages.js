@@ -1,3 +1,8 @@
+
+const express = require("express");
+const messageRoutes = new express.Router();
+const Message = require("../models/message")
+
 /** GET /:id - get detail of message.
  *
  * => {message: {id,
@@ -11,6 +16,11 @@
  *
  **/
 
+ messageRoutes.get("/:id", ensureCorrectUser, async (req, res) => {
+    const id = req.params.id
+    const message = await Message.get(id)
+    return res.json(message)
+ })
 
 /** POST / - post message.
  *
@@ -18,7 +28,12 @@
  *   {message: {id, from_username, to_username, body, sent_at}}
  *
  **/
-
+ messageRoutes.post("/", ensureLoggedIn, async (req, res) => {
+    const {to_username, body} = req.body
+    const username = req.user
+    const message = await Message.create({username, to_username, body})
+    return res.json(message)
+ })
 
 /** POST/:id/read - mark message as read:
  *
@@ -28,3 +43,10 @@
  *
  **/
 
+ messageRoutes.post("/:id/read", ensureLoggedIn, async (req, res) => {
+    const message = req.body
+    const message = await Message.markRead(message.id)
+    return res.json(message)
+ })
+
+module.exports = messageRoutes

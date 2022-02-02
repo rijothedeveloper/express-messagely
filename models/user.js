@@ -32,6 +32,10 @@ class User {
       `select password from users WHERE username = $1`,
       [username]
     );
+    
+    if(results.rowCount === 0) {
+      return false
+    }
     const userPass = results.rows[0].password;
     return await bcrypt.compare(password, userPass);
   }
